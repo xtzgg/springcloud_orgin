@@ -14,8 +14,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +88,11 @@ public class ProductController {
 		 */
 		@PostMapping("/listForOrder")
 		public List<ProductInfoOutPut> listForOrder(@RequestBody List<String> productIdList){
+//			try { //检测hystrix性能
+//				Thread.sleep(2000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			return productService.findProductListById(productIdList);
 		}
 		/**

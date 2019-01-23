@@ -19,6 +19,6 @@ public interface ProductService {
 		/**
 		 * 扣库存
 		 */
-		List<ProductInfoOutPut> decreaseStock(List<DecreaseStockInput> cartDtoList);
+		void decreaseStock(List<DecreaseStockInput> cartDtoList);
 
 }

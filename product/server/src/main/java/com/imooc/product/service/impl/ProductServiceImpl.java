@@ -8,6 +8,8 @@ import com.imooc.product.enums.ResultEnum;
 import com.imooc.product.exception.ProductException;
 import com.imooc.product.repository.ProductInfoRepository;
 import com.imooc.product.service.ProductService;
+import com.imooc.product.utils.JSONUtil;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ public class ProductServiceImpl implements ProductService {
 		@Autowired
 		private ProductInfoRepository productInfoRepository;
 
+		@Autowired
+		private RabbitTemplate rabbitTemplate;
+
 		@Override
 		public List<ProductInfo> findUpAll() {
 				//枚举获取在架商品列表   //枚举使用要学习
@@ -34,23 +39,28 @@ public class ProductServiceImpl implements ProductService {
 
 		@Override
 		public List<ProductInfoOutPut> findProductListById(List<String> productIdList) {
+
 				List<ProductInfo> byProductIdIn = productInfoRepository.findByProductIdIn(productIdList);
-				List<ProductInfoOutPut> outPut = byProductIdIn.stream().map(e -> {
-						ProductInfoOutPut productInfoOutPut = new ProductInfoOutPut();
-						BeanUtils.copyProperties(e, productInfoOutPut);
-						return productInfoOutPut;
-				}).collect(Collectors.toList());
-				return outPut;
+			List<ProductInfoOutPut> productInfoOutPutList = byProductIdIn.stream().map(e -> {
+				ProductInfoOutPut productInfoOutPut = new ProductInfoOutPut();
+				BeanUtils.copyProperties(e, productInfoOutPut);
+				return productInfoOutPut;
+			}).collect(Collectors.toList());
+			return productInfoOutPutList;
 		}
 
 		@Override
-		public List<ProductInfoOutPut> decreaseStock(List<DecreaseStockInput> cartDtoList) {
-				List<ProductInfo> productInfoList = decreaseStockProcess(cartDtoList);
-				return productInfoList.stream().map(e->{
-						ProductInfoOutPut productInfoOutPut = new ProductInfoOutPut();
-						BeanUtils.copyProperties(e,productInfoOutPut);
-						return productInfoOutPut;
-				}).collect(Collectors.toList());
+		public void decreaseStock(List<DecreaseStockInput> cartDtoList) {
+			//一般在商品服务扣完库存之后再给订单服务发送mq消息，防止中间有异常的情况还进行扣库存
+			List<ProductInfo> productInfoList = decreaseStockProcess(cartDtoList);
+			List<ProductInfoOutPut> productInfoOutPutList = productInfoList.stream().map(e -> {
+				ProductInfoOutPut productInfoOutPut = new ProductInfoOutPut();
+				BeanUtils.copyProperties(e, productInfoOutPut);
+				return productInfoOutPut;
+			}).collect(Collectors.toList());
+			//成功扣完库存，将该购物车通过rabbitmq返回返回
+			rabbitTemplate.convertAndSend("productInfo","product_order_routing.stack",
+					JSONUtil.toJSON(productInfoOutPutList));
 		}
 
 		@Transactional

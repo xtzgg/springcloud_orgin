@@ -1,0 +1,12 @@
+com\imooc\user\service\UserInfoService.class
+com\imooc\user\util\CookieUtil.class
+com\imooc\user\util\ResultVOUtil.class
+com\imooc\user\entity\UserInfo.class
+com\imooc\user\repository\UserInfoRepository.class
+com\imooc\user\constant\CookieContant.class
+com\imooc\user\controller\UserInfoController.class
+com\imooc\user\UserApplication.class
+com\imooc\user\VO\ResultVO.class
+com\imooc\user\enums\ResultEnum.class
+com\imooc\user\service\impl\UserInfoServiceImpl.class
+com\imooc\user\enums\RoleEnum.class
