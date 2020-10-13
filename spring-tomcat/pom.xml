@@ -23,7 +23,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <!-- spring基本框架核心工具类，其他spring组件都需要依赖这个包 -->
